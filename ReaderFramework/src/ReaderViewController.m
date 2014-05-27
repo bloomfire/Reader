@@ -371,7 +371,7 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
         [self.navigationItem setLeftBarButtonItem:doneBarButtonItem];
         
     }
-    
+
     thumbsBarButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"Reader.bundle/Reader-Thumbs"]
                                                                            style:UIBarButtonItemStylePlain
                                                                           target:self
@@ -810,7 +810,13 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
     
 	BOOL bookmarked = [_document.bookmarks containsIndex:page];
     
-    moreActionSheet = [[UIActionSheet alloc] initWithTitle:@"More"
+    if (moreActionSheet) {
+        [moreActionSheet dismissWithClickedButtonIndex:-1 animated:YES];
+        moreActionSheet = nil;
+        return;
+    }
+    
+    moreActionSheet = [[UIActionSheet alloc] initWithTitle:nil
                                                   delegate:self
                                          cancelButtonTitle:@"Dismiss"
                                     destructiveButtonTitle:nil
