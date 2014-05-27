@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '7.0'
   s.source       = { 
                      :git => "https://github.com/bobby-beckmann/Reader.git",
-	             :commit => "2f71c991f2b6e8799665a38b557c051c4025540f"
+	             :branch => "bloomfire"
                    }
 
   s.source_files  = 'Classes', 'ReaderFramework/**/*.{h,m}'
