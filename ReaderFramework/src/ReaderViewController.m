@@ -269,10 +269,11 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 
 - (void)showDocument:(id)object
 {
+    [[self navigationController] setNavigationBarHidden:NO animated:NO];
 	[self updateScrollViewContentSize]; // Set content size
 
 	[self showDocumentPage:[_document.pageNumber integerValue]];
-
+    [self updateScrollViewContentViews];
 	_document.lastOpen = [NSDate date]; // Update last opened date
 
 	isVisible = YES; // iOS present modal bodge
@@ -310,12 +311,16 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 {
 	[super viewDidLoad];
 
-	assert(_document != nil); // Must have a valid ReaderDocument
-    [self setAutomaticallyAdjustsScrollViewInsets:NO];
-    
-	self.view.backgroundColor = [UIColor colorWithRed:189/255.0f green:195/255.0f blue:199/255.0f alpha:1.0]; // Neutral gray
-
-	theScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds]; // UIScrollView
+    if ([self isPresentedModally]) {
+        doneBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                                                                          target:self
+                                                                          action:@selector(pushDoneBarButtonItem:)];
+        [self.navigationItem setLeftBarButtonItem:doneBarButtonItem];
+        
+    }
+   
+    self.view.backgroundColor = [UIColor colorWithRed:189/255.0f green:195/255.0f blue:199/255.0f alpha:1.0]; // Neutral gray
+    theScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds]; // UIScrollView
 	theScrollView.autoresizesSubviews = NO;
     theScrollView.contentMode = UIViewContentModeRedraw;
 	theScrollView.showsHorizontalScrollIndicator = NO;
@@ -326,15 +331,21 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	theScrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	theScrollView.backgroundColor = [UIColor clearColor];
     theScrollView.delegate = self;
-	
     [self.view addSubview:theScrollView];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
+    [[self navigationController] setNavigationBarHidden:NO animated:NO];
+}
+
+- (void) setUpDocument {
+
+	assert(_document != nil); // Must have a valid ReaderDocument
+    [self setAutomaticallyAdjustsScrollViewInsets:NO];
+    //self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     
     [self setUpBarButtonItems];
-    
+
 	CGRect toolbarRect = self.view.bounds; // Toolbar frame
 	toolbarRect.size.height = TOOLBAR_HEIGHT; // Default toolbar height
-    
-    [[self navigationController] setNavigationBarHidden:NO animated:NO];
     
 	CGRect pagebarRect = self.view.bounds;; // Pagebar frame
 	pagebarRect.origin.y = (pagebarRect.size.height - PAGEBAR_HEIGHT);
@@ -361,16 +372,14 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	[singleTapOne requireGestureRecognizerToFail:doubleTapOne]; // Single tap requires double tap to fail
 
 	contentViews = [NSMutableDictionary new]; lastHideTime = [NSDate date];
+    [[self navigationController] setNavigationBarHidden:YES animated:NO];
+    [self performSelector:@selector(showDocument:) withObject:nil afterDelay:0.02];
 }
 
+
+
 -(void)setUpBarButtonItems {
-    if ([self isPresentedModally]) {
-        doneBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                                                                          target:self
-                                                                          action:@selector(pushDoneBarButtonItem:)];
-        [self.navigationItem setLeftBarButtonItem:doneBarButtonItem];
-        
-    }
+
 
     thumbsBarButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"Reader.bundle/Reader-Thumbs"]
                                                                            style:UIBarButtonItemStylePlain
@@ -407,7 +416,7 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 
 	if (CGSizeEqualToSize(theScrollView.contentSize, CGSizeZero)) // First time
 	{
-		[self performSelector:@selector(showDocument:) withObject:nil afterDelay:0.02];
+		//[self performSelector:@selector(showDocument:) withObject:nil afterDelay:0.02];
 	}
 
 #if (READER_DISABLE_IDLE == TRUE) // Option
@@ -802,6 +811,7 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 #pragma mark Toolbar button actions
 
 -(void)pushDoneBarButtonItem:(id)sender {
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -820,7 +830,8 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
                                                   delegate:self
                                          cancelButtonTitle:@"Dismiss"
                                     destructiveButtonTitle:nil
-                                         otherButtonTitles:(bookmarked ? ReaderActionSheetItemTitleUnbookmark : ReaderActionSheetItemTitleBookmark),
+                                         otherButtonTitles:
+                       //(bookmarked ? ReaderActionSheetItemTitleUnbookmark : ReaderActionSheetItemTitleBookmark),
                                                             ReaderActionSheetItemTitleEmail,
                                                             ReaderActionSheetItemTitleOpenIn,
                                                             ReaderActionSheetItemTitlePrint, nil];
@@ -856,7 +867,10 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
     } else if ([buttonTitle isEqualToString:ReaderActionSheetItemTitlePrint]) {
         [self actionSheetPrintDocument];
     }
+    
+    moreActionSheet = nil;
 }
+
 
 -(void)actionSheetBookmarkDocument {
     

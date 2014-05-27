@@ -48,4 +48,6 @@
 
 - (void)showDocumentPage:(NSInteger)page;
 
+- (void)setUpDocument;
+
 @end

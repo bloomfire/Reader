@@ -153,11 +153,12 @@
 }
 
 -(void)setUpNavigationBarItems {
+    
     doneBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                                                       target:self
                                                                       action:@selector(pushDoneBarButtonItem:)];
     [self.navigationItem setLeftBarButtonItem:doneBarButtonItem];
-
+/*
     UIImage *thumbsImage = [UIImage imageNamed:@"Reader.bundle/Reader-Thumbs"];
     UIImage *bookmarkImage = [UIImage imageNamed:@"Reader.bundle/Reader-Mark-Y"];
     NSArray *buttonItems = [NSArray arrayWithObjects:thumbsImage, bookmarkImage, nil];
@@ -169,6 +170,7 @@
     [toggleBookmarksSegmentedControl setSelectedSegmentIndex:0];
     
     [self.navigationItem setTitleView:toggleBookmarksSegmentedControl];
+     */
 }
 
 - (void)viewWillAppear:(BOOL)animated
