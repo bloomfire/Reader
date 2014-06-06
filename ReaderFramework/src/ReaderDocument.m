@@ -226,7 +226,8 @@
 			}
 			else // Cupertino, we have a problem with the document
 			{
-				NSAssert(NO, @"CGPDFDocumentRef == NULL");
+				//NSAssert(NO, @"CGPDFDocumentRef == NULL");
+                                return nil;
 			}
 
 			NSFileManager *fileManager = [NSFileManager new]; // File manager instance
