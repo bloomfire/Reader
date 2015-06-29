@@ -1,6 +1,6 @@
 //
 //	ReaderViewController.m
-//	Reader v2.7.2
+//	Reader v2.7.4
 //
 //	Created by Julius Oklamcak on 2011-07-01.
 //	Copyright © 2011-2013 Julius Oklamcak. All rights reserved.
@@ -30,8 +30,7 @@
 #import "ReaderContentView.h"
 #import "ReaderThumbCache.h"
 #import "ReaderThumbQueue.h"
-
-#import "UINavigationController+NavBarAnimation.h"
+#import "ReaderBarsController.h"
 
 #import <MessageUI/MessageUI.h>
 
@@ -54,6 +53,7 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
     UIBarButtonItem *moreBarButtonItem;
     
 	ReaderMainPagebar *mainPagebar;
+    ReaderBarsController * barsController;
 
 	NSMutableDictionary *contentViews;
 
@@ -356,6 +356,9 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
     [mainPagebar setBackgroundColor:[UIColor colorWithWhite:1.0f alpha:0.96f]];
     
 	[self.view addSubview:mainPagebar];
+
+    barsController = [ReaderBarsController barControllerWithPagebar:mainPagebar
+                                               navigationController:self.navigationController];
 
 	UITapGestureRecognizer *singleTapOne = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
 	singleTapOne.numberOfTouchesRequired = 1; singleTapOne.numberOfTapsRequired = 1; singleTapOne.delegate = self;
@@ -695,11 +698,7 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 			{
 				if ([lastHideTime timeIntervalSinceNow] < -0.75) // Delay since hide
 				{
-					if (([self.navigationController isNavigationBarHidden] == YES) || (mainPagebar.hidden == YES))
-					{
-						[self.navigationController setNavigationBarHidden:NO animation:ReaderNavigationBarAnimationFade];
-                        [mainPagebar showPagebar]; // Show
-					}
+                    [barsController setBarsHidden:NO animation:ReaderBarsAnimationFade];
 				}
 			}
 
@@ -800,10 +799,8 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 
 			if (CGRectContainsPoint(areaRect, point) == false) return;
 		}
-
-		[self.navigationController setNavigationBarHidden:YES animation:ReaderNavigationBarAnimationFade];
-        [mainPagebar hidePagebar]; // Hide
-
+        
+        [barsController setBarsHidden:YES animation:ReaderBarsAnimationFade];
 		lastHideTime = [NSDate date];
     }
 }
