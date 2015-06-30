@@ -1,6 +1,6 @@
 //
 //	ReaderDemoController.m
-//	Reader v2.7.0
+//	Reader v2.7.4
 //
 //	Created by Julius Oklamcak on 2011-07-01.
 //	Copyright © 2011-2013 Julius Oklamcak. All rights reserved.
@@ -38,25 +38,6 @@
 
 
 #pragma mark UIViewController methods
-
-/*
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-	if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
-	{
-		// Custom initialization
-	}
-
-	return self;
-}
-*/
-
-/*
-- (void)loadView
-{
-	// Implement loadView to create a view hierarchy programmatically, without using a nib.
-}
-*/
 
 - (void)viewDidLoad
 {
@@ -141,15 +122,18 @@
 
 #if (DEMO_VIEW_CONTROLLER_PUSH == TRUE)
 
-		[self.navigationController pushViewController:readerViewController animated:YES];
-
+		[self.navigationController pushViewController:readerViewController animated:YES ];
+        [readerViewController setUpDocument];
+        
 #else // present in a modal view controller
 
 		readerViewController.modalPresentationStyle = UIModalPresentationFullScreen;
         
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:readerViewController];
         
-		[self presentViewController:navigationController animated:YES completion:NULL];
+		[self presentViewController:navigationController animated:YES completion:^{
+            [readerViewController setUpDocument];
+        }];
 
 #endif // DEMO_VIEW_CONTROLLER_PUSH
 	}
