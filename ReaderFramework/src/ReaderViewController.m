@@ -269,7 +269,6 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 
 - (void)showDocument:(id)object
 {
-    [[self navigationController] setNavigationBarHidden:NO animated:NO];
 	[self updateScrollViewContentSize]; // Set content size
 
 	[self showDocumentPage:[_document.pageNumber integerValue]];
@@ -277,7 +276,6 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	_document.lastOpen = [NSDate date]; // Update last opened date
 
 	isVisible = YES; // iOS present modal bodge
-    
 }
 
 #pragma mark UIViewController methods
@@ -332,15 +330,12 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	theScrollView.backgroundColor = [UIColor clearColor];
     theScrollView.delegate = self;
     [self.view addSubview:theScrollView];
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
-    [[self navigationController] setNavigationBarHidden:NO animated:NO];
 }
 
 - (void) setUpDocument {
 
 	assert(_document != nil); // Must have a valid ReaderDocument
     [self setAutomaticallyAdjustsScrollViewInsets:NO];
-    //self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     
     [self setUpBarButtonItems];
 
@@ -375,14 +370,12 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	[singleTapOne requireGestureRecognizerToFail:doubleTapOne]; // Single tap requires double tap to fail
 
 	contentViews = [NSMutableDictionary new]; lastHideTime = [NSDate date];
-    [[self navigationController] setNavigationBarHidden:YES animated:NO];
+
     [self performSelector:@selector(showDocument:) withObject:nil afterDelay:0.02];
 }
 
 
-
 -(void)setUpBarButtonItems {
-
 
     thumbsBarButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"Reader.bundle/Reader-Thumbs"]
                                                                            style:UIBarButtonItemStylePlain
@@ -395,7 +388,6 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
                                                                       action:@selector(pushActionBarButtonItem:)];
     
     [self.navigationItem setRightBarButtonItems:@[moreBarButtonItem, thumbsBarButton]];
-
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -444,11 +436,6 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	[UIApplication sharedApplication].idleTimerDisabled = NO;
 
 #endif // end of READER_DISABLE_IDLE Option
-}
-
-- (void)viewDidDisappear:(BOOL)animated
-{
-	[super viewDidDisappear:animated];
 }
 
 - (void)viewDidUnload
@@ -787,7 +774,7 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 
 - (void)contentView:(ReaderContentView *)contentView touchesBegan:(NSSet *)touches
 {
-	if (([self.navigationController isNavigationBarHidden] == NO) || (mainPagebar.hidden == NO))
+	if (barsController.barsHidden == NO)
 	{
 		if (touches.count == 1) // Single touches only
 		{
