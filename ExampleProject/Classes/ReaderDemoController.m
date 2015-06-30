@@ -119,11 +119,11 @@
 		ReaderViewController *readerViewController = [[ReaderViewController alloc] initWithReaderDocument:document];
 
 		readerViewController.delegate = self; // Set the ReaderViewController delegate to self
-
+        [readerViewController setUpDocument];
+        
 #if (DEMO_VIEW_CONTROLLER_PUSH == TRUE)
 
 		[self.navigationController pushViewController:readerViewController animated:YES ];
-        [readerViewController setUpDocument];
         
 #else // present in a modal view controller
 
@@ -131,9 +131,7 @@
         
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:readerViewController];
         
-		[self presentViewController:navigationController animated:YES completion:^{
-            [readerViewController setUpDocument];
-        }];
+		[self presentViewController:navigationController animated:YES completion:NULL];
 
 #endif // DEMO_VIEW_CONTROLLER_PUSH
 	}

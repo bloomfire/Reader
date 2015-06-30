@@ -352,9 +352,6 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
     
 	[self.view addSubview:mainPagebar];
 
-    barsController = [ReaderBarsController barControllerWithPagebar:mainPagebar
-                                               navigationController:self.navigationController];
-
 	UITapGestureRecognizer *singleTapOne = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
 	singleTapOne.numberOfTouchesRequired = 1; singleTapOne.numberOfTapsRequired = 1; singleTapOne.delegate = self;
 	[self.view addGestureRecognizer:singleTapOne];
@@ -372,6 +369,11 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	contentViews = [NSMutableDictionary new]; lastHideTime = [NSDate date];
 
     [self performSelector:@selector(showDocument:) withObject:nil afterDelay:0.02];
+}
+
+- (void)setupBarsController {
+    barsController = [ReaderBarsController barControllerWithPagebar:mainPagebar
+                                               navigationController:self.navigationController];
 }
 
 
@@ -393,7 +395,7 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 - (void)viewWillAppear:(BOOL)animated
 {
 	[super viewWillAppear:animated];
-
+    [self setupBarsController];
 	if (CGSizeEqualToSize(lastAppearSize, CGSizeZero) == false)
 	{
 		if (CGSizeEqualToSize(lastAppearSize, self.view.bounds.size) == false)
