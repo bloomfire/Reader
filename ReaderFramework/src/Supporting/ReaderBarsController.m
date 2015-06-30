@@ -22,10 +22,19 @@
 
 + (ReaderBarsController*)barControllerWithPagebar:(ReaderMainPagebar*)pageBar
                              navigationController:(UINavigationController*)navigationController {
-    ReaderBarsController * barController = [ReaderBarsController new];
-    barController.pagebar = pageBar;
-    barController.navigationController = navigationController;
-    return barController;
+    return [[ReaderBarsController alloc] initWithPagebar:pageBar
+                                    navigationController:navigationController];
+}
+
+-(instancetype)initWithPagebar:(ReaderMainPagebar*)pageBar
+          navigationController:(UINavigationController*)navigationController {
+    self = [super init];
+    if (self) {
+        self.pagebar = pageBar;
+        self.navigationController = navigationController;
+        self.barsHidden = NO;
+    }
+    return self;
 }
 
 -(void)setBarsHidden:(BOOL)barsHidden {
@@ -54,10 +63,10 @@
     [self.pagebar hidePagebar];
     
     if (animation == ReaderBarsAnimationFade) {
+        [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
         [UIView animateWithDuration:0.3 animations:^{
             [self.navigationController.navigationBar setAlpha:0.0f];
         } completion:^(BOOL finished) {
-            [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
             [self.navigationController setNavigationBarHidden:YES animated:NO];
         }];
     }
