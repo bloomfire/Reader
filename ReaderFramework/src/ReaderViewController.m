@@ -68,6 +68,8 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	NSDate *lastHideTime;
 
 	BOOL isVisible;
+    
+    NSArray * gestureRecognizers;
 }
 
 #pragma mark Constants
@@ -314,11 +316,10 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
                                                                           target:self
                                                                           action:@selector(pushDoneBarButtonItem:)];
         [self.navigationItem setLeftBarButtonItem:doneBarButtonItem];
-        
     }
    
     self.view.backgroundColor = [UIColor colorWithRed:189/255.0f green:195/255.0f blue:199/255.0f alpha:1.0]; // Neutral gray
-    theScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds]; // UIScrollView
+    theScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
 	theScrollView.autoresizesSubviews = NO;
     theScrollView.contentMode = UIViewContentModeRedraw;
 	theScrollView.showsHorizontalScrollIndicator = NO;
@@ -330,6 +331,9 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
 	theScrollView.backgroundColor = [UIColor clearColor];
     theScrollView.delegate = self;
     [self.view addSubview:theScrollView];
+    
+    [self addGestureRecognizers];
+    [self setGestureRecognizersEnabled:NO];
 }
 
 - (void) setUpDocument {
@@ -338,44 +342,35 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
     [self setAutomaticallyAdjustsScrollViewInsets:NO];
     
     [self setUpBarButtonItems];
-
-	CGRect toolbarRect = self.view.bounds; // Toolbar frame
-	toolbarRect.size.height = TOOLBAR_HEIGHT; // Default toolbar height
+    [self setupMainPageBar];
+    [self setupBarsController];
     
-	CGRect pagebarRect = self.view.bounds;; // Pagebar frame
-	pagebarRect.origin.y = (pagebarRect.size.height - PAGEBAR_HEIGHT);
-	pagebarRect.size.height = PAGEBAR_HEIGHT; // Default pagebar height
-
-	mainPagebar = [[ReaderMainPagebar alloc] initWithFrame:pagebarRect document:_document]; // ReaderMainPagebar
-	mainPagebar.pagebarDelegate = self; // ReaderMainPagebarDelegate
-    [mainPagebar setBackgroundColor:[UIColor colorWithWhite:1.0f alpha:0.96f]];
+    [self setGestureRecognizersEnabled:YES];
     
-	[self.view addSubview:mainPagebar];
-
-	UITapGestureRecognizer *singleTapOne = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
-	singleTapOne.numberOfTouchesRequired = 1; singleTapOne.numberOfTapsRequired = 1; singleTapOne.delegate = self;
-	[self.view addGestureRecognizer:singleTapOne];
-
-	UITapGestureRecognizer *doubleTapOne = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
-	doubleTapOne.numberOfTouchesRequired = 1; doubleTapOne.numberOfTapsRequired = 2; doubleTapOne.delegate = self;
-	[self.view addGestureRecognizer:doubleTapOne];
-
-	UITapGestureRecognizer *doubleTapTwo = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
-	doubleTapTwo.numberOfTouchesRequired = 2; doubleTapTwo.numberOfTapsRequired = 2; doubleTapTwo.delegate = self;
-	[self.view addGestureRecognizer:doubleTapTwo];
-
-	[singleTapOne requireGestureRecognizerToFail:doubleTapOne]; // Single tap requires double tap to fail
-
-	contentViews = [NSMutableDictionary new]; lastHideTime = [NSDate date];
+	contentViews = [NSMutableDictionary new];
+    lastHideTime = [NSDate date];
 
     [self performSelector:@selector(showDocument:) withObject:nil afterDelay:0.02];
+}
+
+- (void)setupMainPageBar {
+    [mainPagebar removeFromSuperview];
+    
+    CGRect pagebarRect = self.view.bounds;; // Pagebar frame
+    pagebarRect.origin.y = (pagebarRect.size.height - PAGEBAR_HEIGHT);
+    pagebarRect.size.height = PAGEBAR_HEIGHT; // Default pagebar height
+    
+    mainPagebar = [[ReaderMainPagebar alloc] initWithFrame:pagebarRect document:_document];
+    mainPagebar.pagebarDelegate = self;
+    [mainPagebar setBackgroundColor:[UIColor colorWithWhite:1.0f alpha:0.96f]];
+    
+    [self.view addSubview:mainPagebar];
 }
 
 - (void)setupBarsController {
     barsController = [ReaderBarsController barControllerWithPagebar:mainPagebar
                                                navigationController:self.navigationController];
 }
-
 
 -(void)setUpBarButtonItems {
 
@@ -390,6 +385,31 @@ NSString * const  ReaderActionSheetItemTitleUnbookmark = @"Unbookmark";
                                                                       action:@selector(pushActionBarButtonItem:)];
     
     [self.navigationItem setRightBarButtonItems:@[moreBarButtonItem, thumbsBarButton]];
+}
+
+- (void) addGestureRecognizers {
+    UITapGestureRecognizer *singleTapOne = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
+    singleTapOne.numberOfTouchesRequired = 1; singleTapOne.numberOfTapsRequired = 1;
+    
+    UITapGestureRecognizer *doubleTapOne = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
+    doubleTapOne.numberOfTouchesRequired = 1; doubleTapOne.numberOfTapsRequired = 2;
+    
+    UITapGestureRecognizer *doubleTapTwo = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
+    doubleTapTwo.numberOfTouchesRequired = 2; doubleTapTwo.numberOfTapsRequired = 2;
+    
+    [singleTapOne requireGestureRecognizerToFail:doubleTapOne]; // Single tap requires double tap to fail
+    
+    gestureRecognizers = @[singleTapOne, doubleTapOne, doubleTapTwo];
+    for (UITapGestureRecognizer * recognizer in gestureRecognizers) {
+        recognizer.delegate = self;
+        [self.view addGestureRecognizer:recognizer];
+    }
+}
+
+- (void)setGestureRecognizersEnabled:(BOOL)enabled {
+    for (UITapGestureRecognizer * recognizer in gestureRecognizers) {
+        recognizer.enabled = enabled;
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated
